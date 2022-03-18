@@ -1,3 +1,4 @@
+import { YahooFinanceModule } from './yahoo-finance/yahoo-finance.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -17,6 +18,7 @@ import { AppService } from './app.service';
       synchronize: true,
       autoLoadEntities: true,
     }),
+    YahooFinanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],
