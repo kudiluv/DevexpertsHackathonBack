@@ -1,0 +1,31 @@
+version: "3.3"
+services:
+  api:
+    image: node:16
+    volumes:
+      - ./:/app
+    ports:
+      - "${PORT}:${PORT}"
+    working_dir: /app
+    env_file:
+      - .env
+    command: sh -c 
+      "npm install &&
+       npm install -g nest &&
+       npm run start:dev"
+    depends_on:
+      - mysql
+  mysql:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=example
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql
+    entrypoint: "bash -c 'echo -e \"CREATE DATABASE IF NOT EXISTS hackathon;\" > /docker-entrypoint-initdb.d/create_hackathon_db.sql &&
+                          /entrypoint.sh mysqld'"
+
+volumes:
+  mysqldata:
+    driver: local
