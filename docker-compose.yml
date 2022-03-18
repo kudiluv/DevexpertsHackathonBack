@@ -25,6 +25,8 @@ services:
       - mysqldata:/var/lib/mysql
     entrypoint: "bash -c 'echo -e \"CREATE DATABASE IF NOT EXISTS hackathon;\" > /docker-entrypoint-initdb.d/create_hackathon_db.sql &&
                           /entrypoint.sh mysqld'"
+  redis:
+    image: redis
 
 volumes:
   mysqldata:
