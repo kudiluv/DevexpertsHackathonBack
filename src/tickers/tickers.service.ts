@@ -28,7 +28,7 @@ export class TickersService {
     });
   }
 
-  getTickersByUserId(userId: number): Promise<Ticker[]> {
-    return this.tickersRepository.find({ users: userId });
-  }
+  // getTickersByUserId(userId: number): Promise<Ticker[]> {
+  //   return this.tickersRepository.find({ users: userId });
+  // }
 }

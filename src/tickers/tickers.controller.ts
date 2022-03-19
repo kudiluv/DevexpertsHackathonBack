@@ -20,10 +20,10 @@ export class TickersController {
     return this.tickersService.create(createTickerDtos);
   }
 
-  @Get('favorits')
-  getFavorits(): Promise<Ticker[]> {
-    return this.tickersSeederService.getTickersByUserId();
-  }
+  // @Get('favorits')
+  // getFavorits(): Promise<Ticker[]> {
+  //   return this.tickersSeederService.getTickersByUserId();
+  // }
 
   @Post('seed')
   seed() {
