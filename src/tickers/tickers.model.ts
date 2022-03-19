@@ -1,7 +1,9 @@
-import { Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Ticker {
-  @PrimaryGeneratedColumn()
+  @PrimaryColumn({
+    type: String,
+  })
   id: string;
 }
