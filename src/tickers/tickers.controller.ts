@@ -1,5 +1,14 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Request,
+  UsePipes,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Auth } from 'src/auth/auth.decorator';
 import CreateTickerDto from './dto/create.ticker';
 import { Ticker } from './tickers.model';
 import { TickersSeederService } from './tickers.seeder.service';
@@ -14,16 +23,19 @@ export class TickersController {
   ) {}
 
   @Post('favorits')
-  addToFavorits(
-    @Body() createTickerDtos: CreateTickerDto[],
-  ): Promise<Ticker[]> {
-    return this.tickersService.create(createTickerDtos);
+  addToFavorits(@Request() req, @Body() createTickerDtos: CreateTickerDto[]) {
+    return this.tickersService.createTickerOfUser(
+      req.user.id,
+      createTickerDtos,
+    );
   }
 
-  // @Get('favorits')
-  // getFavorits(): Promise<Ticker[]> {
-  //   return this.tickersSeederService.getTickersByUserId();
-  // }
+  @Auth()
+  @Get('favorits')
+  @UsePipes()
+  getFavorits(@Request() req): Promise<Ticker[]> {
+    return this.tickersService.getTickersByUserId(req.user.id);
+  }
 
   @Post('seed')
   seed() {
