@@ -1,5 +1,5 @@
 import { YahooFinanceModule } from './yahoo-finance/yahoo-finance.module';
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
@@ -7,6 +7,8 @@ import { AuthModule } from './auth/auth.module';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
 import { UsersModule } from './users/users.module';
 import { TickersModule } from './tickers/tickers.module';
+import * as redisStore from 'cache-manager-redis-store';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -29,10 +31,22 @@ import { TickersModule } from './tickers/tickers.module';
         db: parseInt(process.env.REDIS_DB),
       },
     }),
+    CacheModule.register({
+      store: redisStore,
+      host: process.env.REDIS_HOST,
+      port: parseInt(process.env.REDIS_PORT),
+      ttl: 1000 * 60 * 12,
+    }),
     AuthModule,
     UsersModule,
     TickersModule,
   ],
   controllers: [AppController],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheModule,
+    },
+  ],
 })
 export class AppModule {}
