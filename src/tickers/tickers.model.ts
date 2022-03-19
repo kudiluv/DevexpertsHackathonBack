@@ -1,4 +1,5 @@
-import { Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from 'src/users/users.model';
+import { Entity, JoinTable, ManyToMany, PrimaryColumn } from 'typeorm';
 
 @Entity()
 export class Ticker {
@@ -6,4 +7,10 @@ export class Ticker {
     type: String,
   })
   id: string;
+
+  @ManyToMany(() => User)
+  @JoinTable({
+    name: 'tickers_users',
+  })
+  users: User[];
 }
