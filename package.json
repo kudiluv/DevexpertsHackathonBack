@@ -21,6 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@nestjs/axios": "^0.0.7",
     "@liaoliaots/nestjs-redis": "^6.0.0",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^2.0.0",
@@ -30,6 +31,8 @@
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/swagger": "^5.2.0",
     "@nestjs/typeorm": "^8.0.3",
+    "class-transformer": "^0.5.1",
+    "moment": "^2.29.1",
     "bcryptjs": "^2.4.3",
     "class-validator": "^0.13.2",
     "generate-password": "^1.7.0",

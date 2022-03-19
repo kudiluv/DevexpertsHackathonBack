@@ -1,18 +1,9 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { AppDto } from './app.dto';
-import { AppService } from './app.service';
+import { Controller, Get } from '@nestjs/common';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
-
-  @Post()
-  suka(@Body() appDto: AppDto): AppDto {
-    return appDto;
-  }
-
-  @Get()
+  @Get('ping')
   getHello(): string {
-    return this.appService.getHello();
+    return 'pong';
   }
 }
