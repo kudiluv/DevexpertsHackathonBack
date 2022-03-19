@@ -1,21 +1,15 @@
-import { Expose, Transform } from 'class-transformer';
-import moment from 'moment';
+import { DividendDto } from './dividend.dto';
 
-@Expose()
 export class ShowTickerInfoDto {
+  id: number;
+
   shortName: string;
 
   longName: string;
 
   symbol: string;
 
-  @Expose({ name: 'regularMarketPrice' })
   currentPrice: number;
 
-  @Expose({ name: 'dividendDate' })
-  @Transform(({ value }) => moment(value))
-  dividendDate: Date;
-
-  @Expose({ name: 'fiftyTwoWeekRange' })
-  pricePerTwoWeeks: string;
+  dividends: DividendDto[];
 }

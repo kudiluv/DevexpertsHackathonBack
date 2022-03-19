@@ -25,6 +25,11 @@ export class YahooFinanceController {
     return this.yahooFinanceService.getTickersListInfo(tickers);
   }
 
+  @Get('tikcers/test')
+  test() {
+    return this.yahooFinanceService.getDivedends('AAPL,MSTF,JPM');
+  }
+
   @ApiParam({ name: 'range', enum: RangeDto })
   @ApiParam({ name: 'interval', enum: RangeDto })
   @Get('tickers/price/:tickers/:range/:interval')
