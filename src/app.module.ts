@@ -3,6 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
+import { RedisModule } from '@liaoliaots/nestjs-redis';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -17,6 +20,15 @@ import { AppService } from './app.service';
       synchronize: true,
       autoLoadEntities: true,
     }),
+    RedisModule.forRoot({
+      config: {
+        host: process.env.REDIS_HOST,
+        port: parseInt(process.env.REDIS_PORT),
+        db: parseInt(process.env.REDIS_DB),
+      },
+    }),
+    AuthModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
