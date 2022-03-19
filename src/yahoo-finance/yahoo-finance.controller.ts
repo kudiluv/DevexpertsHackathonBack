@@ -1,6 +1,9 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
+import { ApiParam, ApiProperty } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
-import { ShowTickerInfoDto } from './dto/show.ticker.divedend.dto';
+import { RangeDto } from './dto/range.dto';
+import { ShowTickerInfoDto } from './dto/show.ticker.info.dto';
+import { ShowTickerPrice } from './dto/show.ticker.price.dto';
 import { YahooFinanceService } from './yahoo-finance.service';
 
 @Controller('yahoo-finance')
@@ -15,12 +18,14 @@ export class YahooFinanceController {
     return yahooInfo;
   }
 
-  @Get('tickers/price/:tickers/:period/:interval')
+  @ApiParam({ name: 'range', enum: RangeDto })
+  @ApiParam({ name: 'interval', enum: RangeDto })
+  @Get('tickers/price/:tickers/:range/:interval')
   getTickersPrice(
     @Param('tickers') tickers: string,
-    @Param('tickers') period: string,
-    @Param('tickers') interval: string,
-  ): Observable<any> {
-    return this.yahooFinanceService.getActualPrices(tickers, period, interval);
+    @Param('range') range: RangeDto,
+    @Param('interval') interval: RangeDto,
+  ): Observable<ShowTickerPrice[]> {
+    return this.yahooFinanceService.getActualPrices(tickers, range, interval);
   }
 }
