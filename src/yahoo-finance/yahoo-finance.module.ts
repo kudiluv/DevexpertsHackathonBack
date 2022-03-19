@@ -1,13 +1,7 @@
-import {
-  CacheInterceptor,
-  CacheModule,
-  CACHE_MANAGER,
-  Module,
-} from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { YahooFinanceService } from './yahoo-finance.service';
 import { YahooFinanceController } from './yahoo-finance.controller';
 import { HttpModule } from '@nestjs/axios';
-import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [

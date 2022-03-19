@@ -1,6 +1,8 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import e from 'express';
+import { firstValueFrom, lastValueFrom, map, Observable } from 'rxjs';
+import { DividendDto } from './dto/dividend.dto';
 import { RangeDto } from './dto/range.dto';
 import { ShowTickerInfoDto } from './dto/show.ticker.info.dto';
 import { ShowTickerPriceDto } from './dto/show.ticker.price.dto';
@@ -8,6 +10,37 @@ import { ShowTickerPriceDto } from './dto/show.ticker.price.dto';
 @Injectable()
 export class YahooFinanceService {
   constructor(private httpService: HttpService) {}
+
+  getDivedends(tickers: string): Observable<DividendDto[]> {
+    return this.httpService
+      .get(
+        `http://api.marketstack.com/v1/dividends?access_key=${process.env.MARKETSTACK_KEY}&symbols=${tickers}&limit=100`,
+      )
+      .pipe(
+        map((response) => {
+          const data = response.data.data;
+
+          data.sort((a, b) => {
+            if (a.symbol > b.symbol) {
+              return 1;
+            }
+            if (a.symbol < b.symbol) {
+              return -1;
+            }
+            return 0;
+          });
+
+          return data.map((el) => {
+            const dividend = new DividendDto();
+            dividend.date = el.date;
+            dividend.dividendPrice = el.dividend;
+            dividend.symbol = el.symbol;
+
+            return dividend;
+          });
+        }),
+      );
+  }
 
   getActualPrices(
     tickers: string,
@@ -48,7 +81,17 @@ export class YahooFinanceService {
       this.getActualPrices(tickers, RangeDto.d1, RangeDto.d1),
     );
 
-    console.log(prices);
+    const nonSortedDividends = await lastValueFrom(this.getDivedends(tickers));
+
+    const groupByKey = (list, key) =>
+      list.reduce(
+        (hash, obj) => ({
+          ...hash,
+          [obj[key]]: (hash[obj[key]] || []).concat(obj),
+        }),
+        {},
+      );
+    const dividends = groupByKey(nonSortedDividends, 'symbol');
 
     return this.httpService
       .get(
@@ -64,10 +107,10 @@ export class YahooFinanceService {
           response.data.quoteResponse.result.map((el) => {
             const ticker = new ShowTickerInfoDto();
 
-
             ticker.shortName = el.shortName;
             ticker.longName = el.longName;
             ticker.symbol = el.symbol;
+            ticker.dividends = dividends[el.symbol];
 
             const priceIndex = prices.findIndex(
               (el: ShowTickerPriceDto) => el.symbol === ticker.symbol,
