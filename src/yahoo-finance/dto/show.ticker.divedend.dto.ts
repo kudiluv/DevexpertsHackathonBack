@@ -1,6 +1,7 @@
-import { Transform } from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
 import moment from 'moment';
 
+@Expose()
 export class ShowTickerInfoDto {
   shortName: string;
 
@@ -8,12 +9,13 @@ export class ShowTickerInfoDto {
 
   symbol: string;
 
-  @Transform(({ value }) => value.regularMarketPrice)
+  @Expose({ name: 'regularMarketPrice' })
   currentPrice: number;
 
-  @Transform(({ value }) => moment(value.dividendDate))
+  @Expose({ name: 'dividendDate' })
+  @Transform(({ value }) => moment(value))
   dividendDate: Date;
 
-  @Transform(({ value }) => value.fiftyTwoWeekRange)
+  @Expose({ name: 'fiftyTwoWeekRange' })
   pricePerTwoWeeks: string;
 }
