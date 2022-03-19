@@ -1,11 +1,18 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import { ApiParam, ApiProperty } from '@nestjs/swagger';
+import {
+  CacheInterceptor,
+  Controller,
+  Get,
+  Param,
+  UseInterceptors,
+} from '@nestjs/common';
+import { ApiParam } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 import { RangeDto } from './dto/range.dto';
 import { ShowTickerInfoDto } from './dto/show.ticker.info.dto';
 import { ShowTickerPrice } from './dto/show.ticker.price.dto';
 import { YahooFinanceService } from './yahoo-finance.service';
 
+@UseInterceptors(CacheInterceptor)
 @Controller('yahoo-finance')
 export class YahooFinanceController {
   constructor(private yahooFinanceService: YahooFinanceService) {}
@@ -26,6 +33,7 @@ export class YahooFinanceController {
     @Param('range') range: RangeDto,
     @Param('interval') interval: RangeDto,
   ): Observable<ShowTickerPrice[]> {
+    console.log('not cached');
     return this.yahooFinanceService.getActualPrices(tickers, range, interval);
   }
 }
