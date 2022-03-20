@@ -1,9 +1,10 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import * as moment from 'moment';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import { firstValueFrom, lastValueFrom, map, Observable } from 'rxjs';
 import ChartDto from './dto/chart.dto';
 import { DividendDto } from './dto/dividend.dto';
+import { DividendPriceStatisticDto } from './dto/dividend.prcie.statistic.dto';
 import GapDto from './dto/gap.dto';
 import { RangeDto } from './dto/range.dto';
 import { ShowTickerInfoDto } from './dto/show.ticker.info.dto';
@@ -109,11 +110,11 @@ export class YahooFinanceService {
     tickers: string,
   ): Promise<Observable<ShowTickerInfoDto[]>> {
     const tikcersArr = tickers.split(',');
-    const prices: ShowTickerPriceDto[] = await firstValueFrom(
+    const prices: ShowTickerPriceDto[] = await lastValueFrom(
       this.getActualPrices(tickers, RangeDto.d1, RangeDto.d1),
     );
 
-    const nonSortedDividends = await firstValueFrom(this.getDivedends(tickers));
+    const nonSortedDividends = await lastValueFrom(this.getDivedends(tickers));
 
     const groupByKey = (list, key) =>
       list.reduce(
@@ -131,7 +132,6 @@ export class YahooFinanceService {
           await firstValueFrom(this.getChart(el, RangeDto.d1, RangeDto.y1)),
       ),
     );
-
     return this.httpService
       .get(
         `https://yfapi.net/v6/finance/quote?region=US&lang=en&symbols=${tickers}`,
@@ -143,7 +143,7 @@ export class YahooFinanceService {
       )
       .pipe(
         map((response) =>
-          response.data.quoteResponse.result.map((el) => {
+          response.data.quoteResponse.result.map(async (el) => {
             const ticker = new ShowTickerInfoDto();
 
             ticker.shortName = el.shortName;
@@ -154,6 +154,12 @@ export class YahooFinanceService {
               charts.find((item) => item.symbol === el.symbol),
               new Date(ticker.dividends[0].date).getTime() / 1000,
             );
+
+            ticker.dividends[0].dividendPriceStatistic =
+              await this.getDateOfBack(
+                ticker.symbol,
+                new Date(ticker.dividends[0].date).getTime() / 1000,
+              );
 
             const priceIndex = prices.findIndex(
               (el: ShowTickerPriceDto) => el.symbol === ticker.symbol,
@@ -188,5 +194,37 @@ export class YahooFinanceService {
     const openDate = chartDto.open[paymentDate - 1];
     const gap = (openDate - closeDate) / closeDate;
     return gap;
+  }
+
+  private async getDateOfBack(ticker: string, date: number) {
+    const chart = await firstValueFrom(
+      this.getChart(ticker, RangeDto.d1, RangeDto.y1),
+    );
+
+    const paymentDate =
+      chart.timestamp.findIndex((item) => {
+        return moment(date * 1000)
+          .startOf('day')
+          .isSame(moment(item * 1000).startOf('day'));
+      }) - 2;
+
+    const dividendStatisticDto = new DividendPriceStatisticDto();
+
+    for (let i = paymentDate + 1; i < chart.close.length; i++) {
+      if (chart.close[i] >= chart.close[paymentDate]) {
+        dividendStatisticDto.prices = chart.close.slice(paymentDate, i);
+        dividendStatisticDto.timestamp = chart.timestamp.slice(paymentDate, i);
+
+        return dividendStatisticDto;
+      } else if (chart.open[i] >= chart.close[paymentDate]) {
+        dividendStatisticDto.prices = chart.open.slice(paymentDate, i);
+        dividendStatisticDto.timestamp = chart.timestamp.slice(paymentDate, i);
+
+        return dividendStatisticDto;
+      }
+    }
+
+    dividendStatisticDto.prices = chart.close.slice(paymentDate);
+    dividendStatisticDto.timestamp = chart.close.slice(paymentDate);
   }
 }
