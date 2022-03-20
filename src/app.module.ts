@@ -31,12 +31,6 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
         db: parseInt(process.env.REDIS_DB),
       },
     }),
-    CacheModule.register({
-      store: redisStore,
-      host: process.env.REDIS_HOST,
-      port: parseInt(process.env.REDIS_PORT),
-      ttl: 1000 * 60 * 12,
-    }),
     AuthModule,
     UsersModule,
     TickersModule,

@@ -11,6 +11,7 @@ import { RangeDto } from './dto/range.dto';
 import { ShowTickerInfoDto } from './dto/show.ticker.info.dto';
 import { ShowTickerPriceDto } from './dto/show.ticker.price.dto';
 import { YahooFinanceService } from './yahoo-finance.service';
+import * as moment from 'moment';
 
 @ApiTags('yahoo-finance', 'tickers')
 @UseInterceptors(CacheInterceptor)
@@ -27,7 +28,12 @@ export class YahooFinanceController {
 
   @Get('tikcers/test')
   test() {
-    return this.yahooFinanceService.getDivedends('AAPL,MSTF,JPM');
+    // return this.yahooFinanceService.getDivedends('AAPL,MSTF,JPM');
+  }
+
+  @Get('tickers/:ticker/:date')
+  getGap(@Param('ticker') ticker: string, @Param('date') date: number) {
+    return this.yahooFinanceService.getGapByName(ticker, date);
   }
 
   @ApiParam({ name: 'range', enum: RangeDto })
@@ -37,8 +43,7 @@ export class YahooFinanceController {
     @Param('tickers') tickers: string,
     @Param('range') range: RangeDto,
     @Param('interval') interval: RangeDto,
-  ): Observable<ShowTickerPriceDto[]> {
-    console.log('not cached');
-    return this.yahooFinanceService.getActualPrices(tickers, range, interval);
+  ) {
+    return this.yahooFinanceService.getChart(tickers, range, interval);
   }
 }

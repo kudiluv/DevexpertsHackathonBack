@@ -1,8 +1,10 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import e from 'express';
-import { firstValueFrom, lastValueFrom, map, Observable } from 'rxjs';
+import * as moment from 'moment';
+import { firstValueFrom, map, Observable } from 'rxjs';
+import ChartDto from './dto/chart.dto';
 import { DividendDto } from './dto/dividend.dto';
+import GapDto from './dto/gap.dto';
 import { RangeDto } from './dto/range.dto';
 import { ShowTickerInfoDto } from './dto/show.ticker.info.dto';
 import { ShowTickerPriceDto } from './dto/show.ticker.price.dto';
@@ -42,6 +44,35 @@ export class YahooFinanceService {
       );
   }
 
+  getChart(
+    ticker: string,
+    interval: string,
+    range: string,
+  ): Observable<ChartDto> {
+    return this.httpService
+      .get(
+        `https://yfapi.net/v8/finance/chart/${ticker}?interval=${interval}&range=${range}`,
+        {
+          headers: {
+            'X-API-KEY': process.env.YAHOO_FINANCE_KEY,
+          },
+        },
+      )
+      .pipe(
+        map((response) => {
+          const data = response.data.chart.result[0];
+
+          const chartDto = new ChartDto();
+          chartDto.timestamp = data.timestamp;
+          chartDto.close = data.indicators.quote[0].close;
+          chartDto.open = data.indicators.quote[0].open;
+          chartDto.symbol = data.meta.symbol;
+
+          return chartDto;
+        }),
+      );
+  }
+
   getActualPrices(
     tickers: string,
     range: string,
@@ -77,11 +108,12 @@ export class YahooFinanceService {
   async getTickersListInfo(
     tickers: string,
   ): Promise<Observable<ShowTickerInfoDto[]>> {
+    const tikcersArr = tickers.split(',');
     const prices: ShowTickerPriceDto[] = await firstValueFrom(
       this.getActualPrices(tickers, RangeDto.d1, RangeDto.d1),
     );
 
-    const nonSortedDividends = await lastValueFrom(this.getDivedends(tickers));
+    const nonSortedDividends = await firstValueFrom(this.getDivedends(tickers));
 
     const groupByKey = (list, key) =>
       list.reduce(
@@ -92,6 +124,13 @@ export class YahooFinanceService {
         {},
       );
     const dividends = groupByKey(nonSortedDividends, 'symbol');
+
+    const charts = await Promise.all(
+      tikcersArr.map(
+        async (el) =>
+          await firstValueFrom(this.getChart(el, RangeDto.d1, RangeDto.y1)),
+      ),
+    );
 
     return this.httpService
       .get(
@@ -111,6 +150,10 @@ export class YahooFinanceService {
             ticker.longName = el.longName;
             ticker.symbol = el.symbol;
             ticker.dividends = dividends[el.symbol];
+            ticker.dividends[0].gap = this.getGap(
+              charts.find((item) => item.symbol === el.symbol),
+              new Date(ticker.dividends[0].date).getTime() / 1000,
+            );
 
             const priceIndex = prices.findIndex(
               (el: ShowTickerPriceDto) => el.symbol === ticker.symbol,
@@ -123,5 +166,27 @@ export class YahooFinanceService {
           }),
         ),
       );
+  }
+
+  async getGapByName(ticker: string, date: number): Promise<GapDto> {
+    const chart = await firstValueFrom(
+      this.getChart(ticker, RangeDto.d1, RangeDto.y1),
+    );
+    return {
+      value: await this.getGap(chart, date),
+    };
+  }
+
+  private getGap(chartDto: ChartDto, keyDate: number) {
+    const paymentDate = chartDto.timestamp.findIndex((item) => {
+      return moment(keyDate * 1000)
+        .startOf('day')
+        .isSame(moment(item * 1000).startOf('day'));
+    });
+
+    const closeDate = chartDto.close[paymentDate - 2];
+    const openDate = chartDto.open[paymentDate - 1];
+    const gap = (openDate - closeDate) / closeDate;
+    return gap;
   }
 }
