@@ -22,6 +22,7 @@ export class TickersController {
     private tickersSeederService: TickersSeederService,
   ) {}
 
+  @Auth()
   @Post('favorits')
   addToFavorits(@Request() req, @Body() createTickerDtos: CreateTickerDto[]) {
     return this.tickersService.createTickerOfUser(

@@ -11,6 +11,14 @@ export class Ticker {
   @ManyToMany(() => User)
   @JoinTable({
     name: 'tickers_users',
+    joinColumn: {
+      name: 'ticker_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'user_id',
+      referencedColumnName: 'id',
+    },
   })
   users: User[];
 }

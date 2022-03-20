@@ -31,17 +31,32 @@ export class TickersService {
     });
   }
 
-  getTickersByUserId(userId: number): Promise<Ticker[]> {
-    return this.tickersRepository.find({
-      relations: ['users'],
-      where: { id: userId },
-    });
+  async getTickersByUserId(userId: number): Promise<Ticker[]> {
+    const user = await this.usersService.findByUserId(userId);
+
+    return user.tickers;
   }
-  async createTickerOfUser(userId: number, createTickerDto: CreateTickerDto[]) {
-    // console.log(createTickerDto);
-    // const ticker = await this.tickersRepository.findOne(createTickerDto.name);
-    // const user = await this.usersService.findByUserId(userId);
-    // ticker.users = [user];
-    // return this.tickersRepository.save(ticker);
+
+  async createTickerOfUser(
+    userId: number,
+    createTickerDto: CreateTickerDto[],
+  ): Promise<Ticker[]> {
+    const user = await this.usersService.findByUserId(userId);
+
+    const tickers = [];
+
+    createTickerDto.forEach(async (el) => {
+      const ticker = await this.tickersRepository.findOne({ id: el.name });
+
+      console.log(ticker);
+
+      tickers.push(ticker);
+    });
+
+    user.tickers = tickers;
+
+    const updatedUser = await this.usersService.save(user);
+
+    return updatedUser.tickers;
   }
 }

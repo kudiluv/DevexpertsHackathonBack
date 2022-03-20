@@ -12,7 +12,7 @@ export class UsersService {
   ) {}
 
   async findByUserId(id: number): Promise<User> {
-    return this.userRepository.findOne(id);
+    return this.userRepository.findOne(id, { relations: ['tickers'] });
   }
 
   async findOne(username: string): Promise<User | undefined> {
@@ -24,7 +24,11 @@ export class UsersService {
   }
 
   async create(userDto: CreateUserDto): Promise<User> {
-    const user = await this.userRepository.save(userDto);
-    return user;
+    return await this.userRepository.save(userDto);
+  }
+
+  async save(user: User): Promise<User> {
+    await this.userRepository.save(user);
+    return this.findByUserId(user.id);
   }
 }
