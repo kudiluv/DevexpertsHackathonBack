@@ -25,6 +25,7 @@ export class TickersController {
   @Auth()
   @Post('favorits')
   addToFavorits(@Request() req, @Body() createTickerDtos: CreateTickerDto[]) {
+    console.log('kek');
     return this.tickersService.createTickerOfUser(
       req.user.id,
       createTickerDtos,

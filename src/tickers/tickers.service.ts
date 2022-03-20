@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/users/users.model';
 import { UsersService } from 'src/users/users.service';
 import { Like, Repository } from 'typeorm';
 import CreateTickerDto from './dto/create.ticker';

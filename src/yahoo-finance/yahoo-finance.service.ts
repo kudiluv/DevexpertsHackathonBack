@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import * as moment from 'moment';
 import { firstValueFrom, lastValueFrom, map, Observable } from 'rxjs';
 import ChartDto from './dto/chart.dto';
@@ -143,7 +143,7 @@ export class YahooFinanceService {
       )
       .pipe(
         map((response) =>
-          response.data.quoteResponse.result.map(async (el) => {
+          response.data.quoteResponse.result.map((el) => {
             const ticker = new ShowTickerInfoDto();
 
             ticker.shortName = el.shortName;
@@ -155,11 +155,10 @@ export class YahooFinanceService {
               new Date(ticker.dividends[0].date).getTime() / 1000,
             );
 
-            ticker.dividends[0].dividendPriceStatistic =
-              await this.getDateOfBack(
-                ticker.symbol,
-                new Date(ticker.dividends[0].date).getTime() / 1000,
-              );
+            ticker.dividends[0].dividendPriceStatistic = this.getDateOfBack(
+              charts.find((item) => item.symbol === el.symbol),
+              new Date(ticker.dividends[0].date).getTime() / 1000,
+            );
 
             const priceIndex = prices.findIndex(
               (el: ShowTickerPriceDto) => el.symbol === ticker.symbol,
@@ -196,11 +195,7 @@ export class YahooFinanceService {
     return gap;
   }
 
-  private async getDateOfBack(ticker: string, date: number) {
-    const chart = await firstValueFrom(
-      this.getChart(ticker, RangeDto.d1, RangeDto.y1),
-    );
-
+  private getDateOfBack(chart: ChartDto, date: number) {
     const paymentDate =
       chart.timestamp.findIndex((item) => {
         return moment(date * 1000)
@@ -212,13 +207,19 @@ export class YahooFinanceService {
 
     for (let i = paymentDate + 1; i < chart.close.length; i++) {
       if (chart.close[i] >= chart.close[paymentDate]) {
-        dividendStatisticDto.prices = chart.close.slice(paymentDate, i);
-        dividendStatisticDto.timestamp = chart.timestamp.slice(paymentDate, i);
+        dividendStatisticDto.prices = chart.close.slice(paymentDate + 1, i + 1);
+        dividendStatisticDto.timestamp = chart.timestamp.slice(
+          paymentDate + 1,
+          i + 1,
+        );
 
         return dividendStatisticDto;
       } else if (chart.open[i] >= chart.close[paymentDate]) {
-        dividendStatisticDto.prices = chart.open.slice(paymentDate, i);
-        dividendStatisticDto.timestamp = chart.timestamp.slice(paymentDate, i);
+        dividendStatisticDto.prices = chart.open.slice(paymentDate + 1, i + 1);
+        dividendStatisticDto.timestamp = chart.timestamp.slice(
+          paymentDate + 1,
+          i + 1,
+        );
 
         return dividendStatisticDto;
       }
