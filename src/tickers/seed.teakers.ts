@@ -1,62 +1,62 @@
 export default [
   {
-    id: 'BTC-USD',
+    id: 'AAPL',
   },
   {
-    id: 'SHOP',
+    id: 'MSFT',
   },
   {
-    id: '^IXIC',
+    id: 'GOOG',
   },
   {
-    id: 'ETH-USD',
+    id: 'AMZN',
   },
   {
-    id: '^GSPC',
+    id: 'TSLA',
   },
   {
-    id: '^DJI',
+    id: 'NVDA',
   },
   {
-    id: 'SHIB-USD',
+    id: 'FB',
   },
   {
-    id: 'DIDI',
+    id: 'TSM',
   },
   {
-    id: 'DOGE-USD',
+    id: 'UNH',
   },
   {
-    id: 'XRP-USD',
+    id: 'JNJ',
   },
   {
-    id: 'VZ',
+    id: 'V',
   },
   {
-    id: 'ADA-USD',
+    id: 'WMT',
   },
   {
-    id: 'SOL-USD',
+    id: 'BAC',
   },
   {
-    id: '^RUT',
+    id: 'PG',
   },
   {
-    id: 'ETH-CAD',
+    id: 'HD',
   },
   {
-    id: 'KODK',
+    id: 'MA',
   },
   {
-    id: 'ETH-EUR',
+    id: 'XOM',
   },
   {
-    id: 'SHIB-CAD',
+    id: 'CVX',
   },
   {
-    id: 'MATIC-USD',
+    id: 'PFE',
   },
   {
-    id: 'BTC-EUR',
+    id: 'BABA',
   },
 ];
